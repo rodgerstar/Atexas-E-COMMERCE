@@ -10,21 +10,26 @@ export const synchUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk" },
   { event: "clerk/user.created" },
   async ({ event }) => {
+    console.log("Received clerk/user.created event:", JSON.stringify(event, null, 2));
     try {
       const { id, first_name, last_name, email_addresses, image_url } = event.data;
+      console.log("Extracted user data:", { id, first_name, last_name, email_addresses, image_url });
+
       const userData = {
         _id: id,
-        email: email_addresses[0]?.email_address || "", // Ensure email exists
-        name: `${first_name || ""} ${last_name || ""}`.trim(), // Safely concatenate name
-        image_url: image_url || "", // Fallback for image_url
+        email: email_addresses[0]?.email_address || "",
+        name: `${first_name || ""} ${last_name || ""}`.trim(),
+        image_url: image_url || "",
       };
+      console.log("Prepared user data for creation:", userData);
 
       // Ensure DB connection
       await connectDB();
+      console.log("Database connection established for user creation");
 
       // Create user in DB
       const newUser = await User.create(userData);
-      console.log(`User created: ${newUser._id}`);
+      console.log(`User created successfully: ${newUser._id}`);
       return { success: true, userId: newUser._id };
     } catch (error) {
       console.error("Error in syncUserCreation:", error);
@@ -38,23 +43,29 @@ export const syncUserUpdation = inngest.createFunction(
   { id: "update-user-from-clerk" },
   { event: "clerk/user.updated" },
   async ({ event }) => {
+    console.log("Received clerk/user.updated event:", JSON.stringify(event, null, 2));
     try {
       const { id, first_name, last_name, email_addresses, image_url } = event.data;
+      console.log("Extracted user data:", { id, first_name, last_name, email_addresses, image_url });
+
       const userData = {
-        email: email_addresses[0]?.email_address || "", // Ensure email exists
-        name: `${first_name || ""} ${last_name || ""}`.trim(), // Safely concatenate name
-        image_url: image_url || "", // Fallback for image_url
+        email: email_addresses[0]?.email_address || "",
+        name: `${first_name || ""} ${last_name || ""}`.trim(),
+        image_url: image_url || "",
       };
+      console.log("Prepared user data for update:", userData);
 
       // Ensure DB connection
       await connectDB();
+      console.log("Database connection established for user update");
 
       // Update user in DB
       const updatedUser = await User.findByIdAndUpdate(id, userData, { new: true });
       if (!updatedUser) {
+        console.warn(`User with ID ${id} not found during update`);
         throw new Error(`User with ID ${id} not found`);
       }
-      console.log(`User updated: ${updatedUser._id}`);
+      console.log(`User updated successfully: ${updatedUser._id}`);
       return { success: true, userId: updatedUser._id };
     } catch (error) {
       console.error("Error in syncUserUpdation:", error);
@@ -68,18 +79,26 @@ export const syncUserDeletion = inngest.createFunction(
   { id: "delete-user-from-clerk" },
   { event: "clerk/user.deleted" },
   async ({ event }) => {
+    console.log("Received clerk/user.deleted event:", JSON.stringify(event, null, 2));
     try {
       const { id } = event.data;
+      console.log("Extracted user ID for deletion:", id);
+
+      if (!id) {
+        throw new Error("User ID is required for deletion");
+      }
 
       // Ensure DB connection
       await connectDB();
+      console.log("Database connection established for user deletion");
 
       // Delete user from DB
       const deletedUser = await User.findByIdAndDelete(id);
       if (!deletedUser) {
-        throw new Error(`User with ID ${id} not found`);
+        console.warn(`User with ID ${id} not found during deletion`);
+        return { success: false, message: `User with ID ${id} not found` };
       }
-      console.log(`User deleted: ${id}`);
+      console.log(`User deleted successfully: ${id}`);
       return { success: true, userId: id };
     } catch (error) {
       console.error("Error in syncUserDeletion:", error);
