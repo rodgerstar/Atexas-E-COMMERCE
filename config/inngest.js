@@ -5,104 +5,58 @@ import User from "@/models/User";
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "atexas-next" });
 
-// Inngest Function to save user data to db
+
+
+//inngest Function save user data to db
 export const synchUserCreation = inngest.createFunction(
-  { id: "sync-user-from-clerk" },
-  { event: "clerk/user.created" },
-  async ({ event }) => {
-    console.log("Received clerk/user.created event:", JSON.stringify(event, null, 2));
-    try {
-      const { id, first_name, last_name, email_addresses, image_url } = event.data;
-      console.log("Extracted user data:", { id, first_name, last_name, email_addresses, image_url });
-
-      const userData = {
-        _id: id,
-        email: email_addresses[0]?.email_address || "",
-        name: `${first_name || ""} ${last_name || ""}`.trim(),
-        image_url: image_url || "",
-      };
-      console.log("Prepared user data for creation:", userData);
-
-      // Ensure DB connection
-      await connectDB();
-      console.log("Database connection established for user creation");
-
-      // Create user in DB
-      const newUser = await User.create(userData);
-      console.log(`User created successfully: ${newUser._id}`);
-      return { success: true, userId: newUser._id };
-    } catch (error) {
-      console.error("Error in syncUserCreation:", error);
-      throw new Error(`Failed to sync user creation: ${error.message}`);
+    {
+        id: 'sync-user-from-clerk'
+    },
+    {event: 'clerk/user.created'},
+    async ({event}) => {
+        const { id, first_name, last_name, email_addresses, image_url} = event.data
+        const userData = {
+            _id: id,
+            email: email_addresses[0].email_address,
+            name: first_name + '' + last_name,
+            image_url: image_url
+        }
+        await connectDB(
+            await User.create(userData)
+        )
     }
-  }
-);
+)
 
-// Inngest Function to update user in db
+// ingest function to updated db
 export const syncUserUpdation = inngest.createFunction(
-  { id: "update-user-from-clerk" },
-  { event: "clerk/user.updated" },
-  async ({ event }) => {
-    console.log("Received clerk/user.updated event:", JSON.stringify(event, null, 2));
-    try {
-      const { id, first_name, last_name, email_addresses, image_url } = event.data;
-      console.log("Extracted user data:", { id, first_name, last_name, email_addresses, image_url });
-
-      const userData = {
-        email: email_addresses[0]?.email_address || "",
-        name: `${first_name || ""} ${last_name || ""}`.trim(),
-        image_url: image_url || "",
-      };
-      console.log("Prepared user data for update:", userData);
-
-      // Ensure DB connection
-      await connectDB();
-      console.log("Database connection established for user update");
-
-      // Update user in DB
-      const updatedUser = await User.findByIdAndUpdate(id, userData, { new: true });
-      if (!updatedUser) {
-        console.warn(`User with ID ${id} not found during update`);
-        throw new Error(`User with ID ${id} not found`);
-      }
-      console.log(`User updated successfully: ${updatedUser._id}`);
-      return { success: true, userId: updatedUser._id };
-    } catch (error) {
-      console.error("Error in syncUserUpdation:", error);
-      throw new Error(`Failed to sync user update: ${error.message}`);
+    {
+        id: 'update-user-from-clerk'
+    },
+    {event: 'clerk/user.updated'},
+    async ({event}) => {
+        const { id, first_name, last_name, email_addresses, image_url} = event.data
+        const userData = {
+            _id: id,
+            email: email_addresses[0].email_address,
+            name: first_name + '' + last_name,
+            image_url: image_url
+        }
+        await connectDB(
+            await User.findByIdAndUpdate(id, userData)
+        )
     }
-  }
-);
+)
 
-// Inngest Function to delete user from db
+// inngest function to delete user from db
 export const syncUserDeletion = inngest.createFunction(
-  { id: "delete-user-from-clerk" },
-  { event: "clerk/user.deleted" },
-  async ({ event }) => {
-    console.log("Received clerk/user.deleted event:", JSON.stringify(event, null, 2));
-    try {
-      const { id } = event.data;
-      console.log("Extracted user ID for deletion:", id);
+    {
+        id: 'delete-user-from-clerk'
+    },
+    {event: 'clerk/user.deleted'},
+    async ({event}) => {
+        const {id} = event.data
 
-      if (!id) {
-        throw new Error("User ID is required for deletion");
-      }
-
-      // Ensure DB connection
-      await connectDB();
-      console.log("Database connection established for user deletion");
-
-      // Delete user from DB
-      const deletedUser = await User.findByIdAndDelete(id);
-      if (!deletedUser) {
-        console.warn(`User with ID ${id} not found during deletion`);
-        return { success: false, message: `User with ID ${id} not found` };
-      }
-      console.log(`User deleted successfully: ${id}`);
-      return { success: true, userId: id };
-    } catch (error) {
-      console.error("Error in syncUserDeletion:", error);
-      throw new Error(`Failed to sync user deletion: ${error.message}`);
+        await connectDB()
+        await User.findByIdAndDelete(id)
     }
-  }
-);
+)
