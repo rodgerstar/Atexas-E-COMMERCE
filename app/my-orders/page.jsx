@@ -49,9 +49,9 @@ const MyOrders = () => {
                                     <p>
                                         <span className="font-medium">{order.address.fullName}</span>
                                         <br />
-                                        <span >{order.address.area}</span>
+                                        <span >{order.address.town}</span>
                                         <br />
-                                        <span>{`${order.address.city}, ${order.address.state}`}</span>
+                                        <span>{`${order.address.city}, ${order.address.county}`}</span>
                                         <br />
                                         <span>{order.address.phoneNumber}</span>
                                     </p>
