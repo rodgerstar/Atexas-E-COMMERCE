@@ -1,4 +1,5 @@
-import logo from "./logo.png";
+import logo from "./gadget.png";
+import gadget from "./gadget.png"
 import search_icon from "./search_icon.svg";
 import user_icon from "./user_icon.svg";
 import cart_icon from "./cart_icon.svg";
@@ -22,7 +23,7 @@ import redirect_icon from "./redirect_icon.svg";
 import star_dull_icon from "./star_dull_icon.svg";
 import header_headphone_image from "./header_headphone_image.png";
 import header_playstation_image from "./header_playstation_image.png";
-import header_macbook_image from "./header_macbook_image.png";
+import iphone from "./three.png";
 import macbook_image from "./macbook_image.png";
 import bose_headphone_image from "./bose_headphone_image.png";
 import apple_earphone_image from "./apple_earphone_image.png";
@@ -72,7 +73,8 @@ export const assets = {
   star_dull_icon,
   header_headphone_image,
   header_playstation_image,
-  header_macbook_image,
+  
+  iphone,
   macbook_image,
   bose_headphone_image,
   apple_earphone_image,
